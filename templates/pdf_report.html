@@ -13,5 +13,5 @@ td{padding:9px;border:1px solid #e2e8f0;vertical-align:top;font-size:11px}
 <div class="meta">Generated: {{now.strftime('%d %B %Y, %I:%M %p')}}<br>Total Records: {{total}}<br>System: VOW Sercure Database</div></div>
 <table><thead><tr><th>Complaint ID</th><th>Name</th><th>Phone</th><th>Service</th><th>Complaint</th><th>Status</th><th>Date</th></tr></thead>
 <tbody>{% for c in complaints %}<tr><td style="font-weight:800">{{c.complaint_id}}</td><td>{{c.name}}</td><td>{{c.phone}}</td><td>{{c.service}}</td><td>{{c.complaint_text}}</td><td>{{'Resolved' if c.resolved else 'Pending'}}</td><td>{{c.created_at.strftime('%d/%m/%Y')}}</td></tr>{% endfor %}</tbody></table>
-<div class="footer">VOW - Vihan Online Work | Permanent Business Record System | This report is generated from SQLite permanent storage, not localStorage</div>
+<div class="footer">VOW - Vihan Online Work | Permanent Business Record System</div>
 </body></html>
