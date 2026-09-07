@@ -7,11 +7,11 @@
 <h2 style="font-size:16px;font-weight:700;margin-bottom:14px">Admin Login</h2>
 {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for cat,msg in messages %}<div class="flash flash-{{cat}}">{{msg}}</div>{% endfor %}{% endif %}{% endwith %}
 <form method="POST">
-<div style="margin-bottom:12px"><span class="label">Username</span><input class="input" name="username" required value="admin"></div>
+<div style="margin-bottom:12px"><span class="label">Username</span><input class="input" name="username" required value="sachin"></div>
 <div style="margin-bottom:16px"><span class="label">Password</span><input class="input" type="password" name="password" required placeholder="••••••••"></div>
 <button class="btn" style="width:100%;justify-content:center">Secure Login</button>
 </form>
-<div style="margin-top:14px;padding:10px;background:#f8fafc;border-radius:8px;font-size:11px;color:var(--muted)">Default credentials: <b>admin / Vow@123</b><br>Change password hash in app.py after deployment.</div>
+<div style="margin-top:14px;padding:10px;background:#f8fafc;border-radius:8px;font-size:11px;color:var(--muted)"></div>
 </div>
 <a href="/" style="display:block;text-align:center;margin-top:16px;font-size:13px;color:var(--muted);text-decoration:none">← Back to Home</a>
 </div>
