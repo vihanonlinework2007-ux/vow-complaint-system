@@ -10,10 +10,8 @@ app.secret_key = os.environ.get('SECRET_KEY', 'vow-secure-2026-vihan-online-work
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # --- PERMANENT DATABASE LOGIC ---
-# If DATABASE_URL is set (PostgreSQL on Render), use it. Otherwise use local SQLite for testing.
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
-    # Render gives postgres:// but SQLAlchemy needs postgresql://
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
@@ -23,7 +21,6 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# --- MODELS ---
 class Complaint(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     complaint_id = db.Column(db.String(50), unique=True, nullable=False)
