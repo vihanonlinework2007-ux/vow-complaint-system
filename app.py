@@ -8,15 +8,25 @@ from sqlalchemy import func
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'vow-secure-2026-vihan-online-work')
 basedir = os.path.abspath(os.path.dirname(__file__))
-# Permanent storage - SQLite database file, NOT localStorage
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "vow_database.db")}'
+
+# --- PERMANENT DATABASE LOGIC ---
+# If DATABASE_URL is set (PostgreSQL on Render), use it. Otherwise use local SQLite for testing.
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    # Render gives postgres:// but SQLAlchemy needs postgresql://
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "vow_database.db")}'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # --- MODELS ---
 class Complaint(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    complaint_id = db.Column(db.String(50), unique=True, nullable=False)  # e.g. SACHIN-6789
+    complaint_id = db.Column(db.String(50), unique=True, nullable=False)
     name = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
     service = db.Column(db.String(100), nullable=False)
@@ -33,18 +43,16 @@ def generate_complaint_id(name, phone):
     base_name = ''.join([c for c in name if c.isalpha()]).upper()[:12] or "USER"
     last4 = phone.strip()[-4:] if len(phone.strip()) >= 4 else phone.strip()
     base_id = f"{base_name}-{last4}"
-    # Make unique if exists
     existing = Complaint.query.filter(Complaint.complaint_id.like(f"{base_id}%")).count()
     return base_id if existing == 0 else f"{base_id}-{existing+1}"
 
 def init_db():
     db.create_all()
     if not Admin.query.filter_by(username='admin').first():
-        admin = Admin(username='admin', password_hash=generate_password_hash('31122007'))
+        admin = Admin(username='admin', password_hash=generate_password_hash('Vow@123'))
         db.session.add(admin)
         db.session.commit()
 
-# Initialize on startup
 with app.app_context():
     init_db()
 
@@ -57,7 +65,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
-# --- ROUTES ---
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
@@ -101,37 +108,26 @@ def admin_logout():
 def dashboard():
     today = datetime.utcnow().date()
     month_start = today.replace(day=1)
-    
     total = Complaint.query.count()
     today_count = Complaint.query.filter(func.date(Complaint.created_at) == today).count()
     month_count = Complaint.query.filter(Complaint.created_at >= datetime.combine(month_start, datetime.min.time())).count()
     pending = Complaint.query.filter_by(resolved=False).count()
     resolved = Complaint.query.filter_by(resolved=True).count()
-
-    # Search & Filter
     search = request.args.get('q','').strip()
     service_filter = request.args.get('service','').strip()
     status_filter = request.args.get('status','').strip()
-
     query = Complaint.query.order_by(Complaint.created_at.desc())
     if search:
         like = f"%{search}%"
-        query = query.filter(
-            (Complaint.complaint_id.ilike(like)) |
-            (Complaint.name.ilike(like)) |
-            (Complaint.phone.ilike(like)) |
-            (Complaint.complaint_text.ilike(like))
-        )
+        query = query.filter((Complaint.complaint_id.ilike(like)) | (Complaint.name.ilike(like)) | (Complaint.phone.ilike(like)) | (Complaint.complaint_text.ilike(like)))
     if service_filter:
         query = query.filter(Complaint.service == service_filter)
     if status_filter == 'resolved':
         query = query.filter(Complaint.resolved == True)
     elif status_filter == 'pending':
         query = query.filter(Complaint.resolved == False)
-
     complaints = query.all()
     services = [s[0] for s in db.session.query(Complaint.service).distinct().all() if s[0]]
-
     return render_template('dashboard.html', complaints=complaints, total=total, today_count=today_count, month_count=month_count, pending=pending, resolved=resolved, services=services, search=search)
 
 @app.route('/admin/add', methods=['POST'])
@@ -181,7 +177,6 @@ def export_pdf():
         response.headers['Content-Disposition'] = 'attachment; filename=VOW_Business_Report.pdf'
         return response
     except Exception as e:
-        # Fallback printable HTML if weasyprint not installed
         return html
 
 if __name__ == '__main__':
