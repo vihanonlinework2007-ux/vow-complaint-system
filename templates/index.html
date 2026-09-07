@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VOW - Submit Complaint | Vihan Online Work</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body>
+<div class="topbar"><div class="brand">VOW <small>Vihan Online Work</small></div><a href="/admin/login" class="btn btn-light">Admin Login</a></div>
+<div class="container" style="max-width:560px;padding-top:36px;padding-bottom:40px">
+<h1 style="font-size:28px;letter-spacing:-0.8px;font-weight:800">Submit Your Complaint</h1>
+<p style="color:var(--muted);margin-top:6px;font-size:13.5px">Professional support. Data is stored securely in permanent database.</p>
+
+{% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for cat,msg in messages %}<div class="flash flash-{{cat}}" style="margin-top:18px">{{msg}}</div>{% endfor %}{% endif %}{% endwith %}
+
+<div class="card" style="margin-top:22px">
+<form method="POST">
+<div style="margin-bottom:14px"><span class="label">Full Name</span><input class="input" name="name" required placeholder="e.g. Sachin Sharma"></div>
+<div style="margin-bottom:14px"><span class="label">Phone Number</span><input class="input" name="phone" required pattern="[0-9]{10,15}" placeholder="10 digit mobile number"></div>
+<div style="margin-bottom:14px"><span class="label">Service</span>
+<select class="input" name="service" required><option value="">Select Service</option><option>Website Development</option><option>Digital Marketing</option><option>Business Support</option><option>Payment Issue</option><option>Account Issue</option><option>Other</option></select></div>
+<div style="margin-bottom:18px"><span class="label">Complaint Details</span><textarea class="input" name="complaint" rows="4" required placeholder="Explain your issue clearly..."></textarea></div>
+<button class="btn" style="width:100%;justify-content:center;padding:12px">Submit Complaint</button>
+</form>
+</div>
+<p style="text-align:center;color:#94a3b8;font-size:11.5px;margin-top:14px">Complaint ID is auto-generated: NAME + Last 4 digits (Example: SACHIN-6789)</p>
+</div>
+</body></html>

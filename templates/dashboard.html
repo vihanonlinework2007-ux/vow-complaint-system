@@ -1,0 +1,57 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard - VOW Admin</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body>
+<div class="topbar"><div class="brand">VOW <small>Complaint Management</small></div><div style="display:flex;gap:8px"><a href="/admin/export/pdf" class="btn btn-light btn-sm">Export PDF</a><a href="/admin/logout" class="btn btn-sm">Logout</a></div></div>
+<div class="container" style="padding-top:18px;padding-bottom:30px">
+{% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for cat,msg in messages %}<div class="flash flash-{{cat}}">{{msg}}</div>{% endfor %}{% endif %}{% endwith %}
+
+<div class="stats">
+<div class="card"><div class="stat-label">Total Complaints</div><div class="stat-num">{{total}}</div></div>
+<div class="card"><div class="stat-label">Today</div><div class="stat-num">{{today_count}}</div></div>
+<div class="card"><div class="stat-label">This Month</div><div class="stat-num">{{month_count}}</div></div>
+<div class="card"><div class="stat-label">Pending / Resolved</div><div class="stat-num" style="font-size:20px">{{pending}} / {{resolved}}</div></div>
+</div>
+
+<div class="card" style="margin-bottom:18px">
+<div style="font-weight:700;margin-bottom:12px">Add Complaint (Admin Authority)</div>
+<form method="POST" action="/admin/add">
+<div class="grid2">
+<div><span class="label">Name</span><input class="input" name="name" required placeholder="Customer name"></div>
+<div><span class="label">Phone</span><input class="input" name="phone" required placeholder="Phone number"></div>
+<div><span class="label">Service</span><select class="input" name="service" required><option value="">Select</option><option>Website Development</option><option>Digital Marketing</option><option>Business Support</option><option>Payment Issue</option><option>Account Issue</option><option>Other</option></select></div>
+<div><span class="label">Complaint</span><input class="input" name="complaint" required placeholder="Issue"></div>
+</div>
+<button class="btn" style="margin-top:12px">Add Record to Permanent Database</button>
+</form>
+</div>
+
+<div class="card" style="padding:14px;margin-bottom:14px">
+<form method="GET" style="display:flex;gap:8px;flex-wrap:wrap">
+<input class="input" name="q" value="{{search}}" placeholder="Search ID, name, phone, complaint..." style="flex:1;min-width:200px">
+<select class="input" name="service" style="width:170px"><option value="">All Services</option>{% for s in services %}<option value="{{s}}" {% if request.args.get('service')==s %}selected{% endif %}>{{s}}</option>{% endfor %}</select>
+<select class="input" name="status" style="width:140px"><option value="">All Status</option><option value="pending" {% if request.args.get('status')=='pending' %}selected{% endif %}>Pending</option><option value="resolved" {% if request.args.get('status')=='resolved' %}selected{% endif %}>Resolved</option></select>
+<button class="btn btn-light">Filter</button>
+{% if request.args %}<a href="/admin/dashboard" class="btn btn-light">Clear</a>{% endif %}
+</form>
+</div>
+
+<div class="table-box">
+<table><thead><tr><th>Complaint ID</th><th>Customer</th><th>Service</th><th>Complaint</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+<tbody>
+{% for c in complaints %}
+<tr>
+<td style="font-weight:700;letter-spacing:0.2px">{{c.complaint_id}}</td>
+<td><div style="font-weight:600">{{c.name}}</div><div style="color:var(--muted);font-size:11.5px">{{c.phone}}</div></td>
+<td>{{c.service}}</td>
+<td style="max-width:280px;white-space:pre-wrap">{{c.complaint_text}}</td>
+<td style="color:var(--muted);font-size:11.5px">{{c.created_at.strftime('%d %b %Y, %I:%M %p')}}</td>
+<td>{% if c.resolved %}<span class="badge badge-resolved">Resolved</span>{% else %}<span class="badge badge-pending">Pending</span>{% endif %}</td>
+<td><a href="/admin/toggle/{{c.id}}" class="btn btn-light btn-sm" style="display:block;text-align:center;margin-bottom:6px;width:110px">{% if c.resolved %}Mark Pending{% else %}Mark Resolved{% endif %}</a><a href="/admin/delete/{{c.id}}" onclick="return confirm('Delete this complaint permanently?')" style="color:#ef4444;font-size:11px;text-decoration:none;font-weight:600">Delete</a></td>
+</tr>
+{% else %}
+<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">No complaints found. Data is stored in permanent SQLite database.</td></tr>
+{% endfor %}
+</tbody></table>
+</div>
+</div>
+</body></html>
