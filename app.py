@@ -40,7 +40,7 @@ def generate_complaint_id(name, phone):
 def init_db():
     db.create_all()
     if not Admin.query.filter_by(username='admin').first():
-        admin = Admin(username='admin', password_hash=generate_password_hash('Vow@123'))
+        admin = Admin(username='admin', password_hash=generate_password_hash('31122007'))
         db.session.add(admin)
         db.session.commit()
 
